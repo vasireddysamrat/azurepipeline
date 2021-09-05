@@ -1,0 +1,40 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+trigger:
+- master
+
+pool:
+  vmImage: ubuntu-latest
+
+steps:
+- script: echo Hello, world!
+  displayName: 'Run a one-line script'
+
+- script: ls -al && pwd
+  displayName: 'List Files & Current Working Directory'
+  
+
+- script: echo "The Build ID is $(Build.BuildId) with Build Number $(Build.BuildNumber) and WAR located at $(Build.ArtifactStagingDirectory)"
+  displayName: 'Printing the Build ID, Number & ArtifactStagingDirectory'
+  
+- script: sudo apt update >> /dev/null 2>&1 && sudo apt install openjdk-8-jdk >> /dev/null 2>&1 && java -version
+  displayName: 'Installing OpenJDK & Checking it'
+
+- script: ls -al && chmod 700 build.sh && sudo bash ./build.sh && ls -al
+  displayName: 'Run the Build Script'  
+
+- script: ls -al && mv ROOT.war ROOT$(Build.BuildId).war && ls -al
+  displayName: 'Rename WAR file
+
+- task: CopyFiles@2
+  inputs:
+    Contents: 'ROOT$(Build.BuildId).war'
+	TargetFolder: '$(Build.ArtifactStagingDirectory)'
+	OverWrite: true
+
+- script: ls -al $(Build.ArtifactStagingDirectory)
+  displayName: 'List Build Artifact Staging Directory'  
+  
